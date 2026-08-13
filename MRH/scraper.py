@@ -287,8 +287,8 @@ def fetch_slug(devis_id: int, slug: str) -> tuple[str, dict | None]:
                     if parsed == []:
                         log.warning(f"  [{slug}] reponse [] -> pas d'offre pour ce profil")
                         return slug, None
-                    log.warning(f"  [{slug}] reponse non-dict inattendue, retry dans 10s...")
-                    time.sleep(10)
+                    log.warning(f"  [{slug}] reponse non-dict inattendue, retry dans 3s...")
+                    time.sleep(3)
                     continue
                 nb = len(parsed.get("data") or [])
                 if nb == 0:
@@ -302,15 +302,15 @@ def fetch_slug(devis_id: int, slug: str) -> tuple[str, dict | None]:
                     log.info(f"  [{slug}] {nb} offre(s)")
                 return slug, parsed
             else:
-                log.warning(f"  [{slug}] reponse vide ou HTTP {resp.status_code}, retry dans 10s...")
-                time.sleep(10)
+                log.warning(f"  [{slug}] reponse vide ou HTTP {resp.status_code}, retry dans 3s...")
+                time.sleep(3)
         except RequestException as exc:
             log.error(f"  [{slug}] erreur reseau : {exc}")
-            time.sleep(10)
+            time.sleep(3)
         except ValueError as exc:
             body_preview = resp.text[:100] if resp is not None else ""
             log.error(f"  [{slug}] JSON invalide : {exc} - {body_preview}")
-            time.sleep(10)
+            time.sleep(3)
 
     log.warning(f"  [{slug}] aucune reponse valide apres 3 tentatives")
     return slug, None
@@ -319,8 +319,8 @@ def fetch_slug(devis_id: int, slug: str) -> tuple[str, dict | None]:
 def get_offers(session: requests.Session, devis_id: int, slugs: list) -> dict:
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    log.info("  Attente initiale 10s pour le calcul des tarifs...")
-    time.sleep(10)
+    log.info("  Attente initiale 5s pour le calcul des tarifs...")
+    time.sleep(5)
 
     offers = {}
     # timeout=120s par slug : évite un blocage infini si un worker ne répond plus
