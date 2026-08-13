@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+
+# Sorties générées (volumineuses, régénérables)
+output/
+
+# Config locale Claude
+**/.claude/settings.local.json
+
+# Capture page web (debug, pas du code)
+Animaux/Pages_Devis/
