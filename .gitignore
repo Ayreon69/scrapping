@@ -6,6 +6,10 @@ output/
 
 # Config locale Claude
 **/.claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # Capture page web (debug, pas du code)
 Animaux/Pages_Devis/
+
+# Logs de collecte ad-hoc
+collecte.out

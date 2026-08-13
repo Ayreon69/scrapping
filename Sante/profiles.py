@@ -53,6 +53,16 @@ CODE_POSTAUX = [
     ("67000", "Strasbourg"),
     ("44000", "Nantes"),
     ("34000", "Montpellier"),
+    ("35000", "Rennes"),
+    ("38000", "Grenoble"),
+    ("21000", "Dijon"),
+    ("49000", "Angers"),
+    ("51100", "Reims"),
+    ("42000", "Saint-Etienne"),
+    ("57000", "Metz"),
+    ("14000", "Caen"),
+    ("20000", "Ajaccio"),
+    ("97400", "Saint-Denis (La Reunion)"),
 ]
 
 
@@ -217,8 +227,8 @@ def generate_deterministic_profiles() -> list[dict]:
     for profession, autre_profession in PROFESSIONS:
         profiles.append(_label(base, profession=profession, autre_profession=autre_profession))
 
-    # --- 5. âge de l'assuré principal ---
-    for age in [18, 25, 30, 40, 50, 60, 70, 75]:
+    # --- 5. âge de l'assuré principal (dense, tous les 2 ans de 18 à 80) ---
+    for age in range(18, 81, 2):
         ddn = (date.today() - timedelta(days=age * 365)).strftime("%Y-%m-%d")
         profiles.append(_label(base, date_naissance=ddn))
 
@@ -238,17 +248,17 @@ def generate_deterministic_profiles() -> list[dict]:
     for mode in MODES_SOINS:
         profiles.append(_label(base, mode_sois=mode))
 
-    # --- 8. nb_enfants (ADULT_KIDS) ---
-    for nb_e in [1, 2, 3]:
+    # --- 8. nb_enfants (ADULT_KIDS, 0 à 5) ---
+    for nb_e in range(0, 6):
         enfants = {f"date_naissance_enfant_{i}": ("2015-01-01" if i <= nb_e else None) for i in range(1, 6)}
         profiles.append(_label(base, who_assure="ADULT_KIDS", conjoint="NON", conjoint_date_naissance=None, nb_enfant=nb_e, **enfants))
 
-    # --- 9. âge conjoint ---
-    for age_c in [25, 40, 60, 70]:
+    # --- 9. âge conjoint (dense, tous les 5 ans de 18 à 80) ---
+    for age_c in range(18, 81, 5):
         ddn_cv = (date.today() - timedelta(days=age_c * 365)).strftime("%Y-%m-%d")
         profiles.append(_label(base, who_assure="COUPLE", conjoint="OUI", conjoint_date_naissance=ddn_cv, regime_conjoint="REGIME_GENERAL", nb_enfant=0))
 
-    # --- 10. géographie ---
+    # --- 10. géographie (20 villes) ---
     for cp, ville in CODE_POSTAUX:
         b = _base_profile(cp=cp, ville=ville)
         profiles.append(_label(b, cp=cp, ville=ville))
