@@ -25,8 +25,13 @@ HEADERS = {
     "x-requested-with": "XMLHttpRequest",
 }
 
-# Délais en secondes
-DELAY_BETWEEN_REQUESTS = (3, 8)    # entre chaque GET assureur
-DELAY_BETWEEN_PROFILES = (15, 45)  # entre chaque profil
+DELAY_BETWEEN_PROFILES = (15, 45)
+REQUEST_TIMEOUT = 15
+
+CSV_DELIMITER = ";"
+CSV_ENCODING = "utf-8-sig"
+EXPORT_DATE_FORMAT = "%d/%m/%Y"
+DEFAULT_N_PROFILES = 5
+ENABLE_XLSX_EXPORT = True
 
 PROVENANCE = "Acces-direct_Mon Gustave Animaux.Ghalem_Visuel"
