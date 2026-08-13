@@ -23,7 +23,7 @@ from config import (
     REQUEST_TIMEOUT,
     SLUGS_ASSUREURS,
 )
-from profiles import generate_profiles
+from profiles import generate_deterministic_profiles, generate_profiles
 
 OUTPUT_DIR = Path("output")
 ARCHIVE_DIR = OUTPUT_DIR / "archive"
@@ -120,14 +120,18 @@ def load_existing_results(output_dir: Path) -> list:
     return data if isinstance(data, list) else []
 
 
-def prepare_profiles(n_profiles: int, output_dir: Path, resume: bool = True) -> list[dict]:
+def prepare_profiles(n_profiles: int, output_dir: Path, resume: bool = True, deterministic: bool = False) -> list[dict]:
     if resume and PENDING_PROFILES_PATH.exists():
         with open(PENDING_PROFILES_PATH, "r", encoding="utf-8") as f:
             pending_profiles = json.load(f)
         log.info(f"Reprise detectee -> {len(pending_profiles)} profil(s) restant(s)")
         return pending_profiles
 
-    profiles = generate_profiles(n_profiles)
+    if deterministic:
+        profiles = generate_deterministic_profiles()
+        log.info(f"Mode deterministe -> {len(profiles)} profil(s) de diagnostic generes")
+    else:
+        profiles = generate_profiles(n_profiles)
     with open(PENDING_PROFILES_PATH, "w", encoding="utf-8") as f:
         json.dump(profiles, f, ensure_ascii=False, indent=2)
     log.info(f"Nouveau lot prepare -> {len(profiles)} profil(s)")
@@ -372,7 +376,7 @@ def save_results(results: list, output_dir: Path) -> None:
     export_xlsx(csv_rows, output_dir)
 
 
-def run(n_profiles: int = DEFAULT_N_PROFILES, resume: bool = True):
+def run(n_profiles: int = DEFAULT_N_PROFILES, resume: bool = True, deterministic: bool = False):
     setup_logging(OUTPUT_DIR)
     OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -382,7 +386,7 @@ def run(n_profiles: int = DEFAULT_N_PROFILES, resume: bool = True):
         archive_previous_results(OUTPUT_DIR)
         results = []
 
-    pending_profiles = prepare_profiles(n_profiles, OUTPUT_DIR, resume=resume)
+    pending_profiles = prepare_profiles(n_profiles, OUTPUT_DIR, resume=resume, deterministic=deterministic)
     total_profiles = len(results) + len(pending_profiles)
     log.info(f"=== Demarrage Animaux : {total_profiles} profil(s) a traiter ===")
 
@@ -418,6 +422,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scraper Animaux mongustave")
     parser.add_argument("--n", type=int, default=DEFAULT_N_PROFILES, help="Nombre de profils aleatoires")
     parser.add_argument("--no-resume", action="store_true", help="Repart de zero (archive les resultats precedents)")
+    parser.add_argument("--deterministic", action="store_true", help="Mode diagnostic: profils deterministes")
     args = parser.parse_args()
 
-    run(n_profiles=args.n, resume=not args.no_resume)
+    run(n_profiles=args.n, resume=not args.no_resume, deterministic=args.deterministic)
