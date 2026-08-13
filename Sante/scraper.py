@@ -24,7 +24,7 @@ from config import (
     REQUEST_TIMEOUT,
     SLUGS_ASSUREURS,
 )
-from profiles import generate_deterministic_profiles, generate_profiles
+from profiles import generate_deterministic_profiles, generate_profiles, generate_senior_profiles
 from load_excel import load_profiles_from_excel
 
 OUTPUT_DIR = Path("output")
@@ -164,6 +164,7 @@ def prepare_profiles(
     output_dir: Path,
     resume: bool = True,
     deterministic: bool = False,
+    senior: bool = False,
     from_excel: str | None = None,
 ) -> list[dict]:
     if resume and PENDING_PROFILES_PATH.exists():
@@ -175,6 +176,9 @@ def prepare_profiles(
     if from_excel:
         profiles = load_profiles_from_excel(from_excel)
         log.info(f"Mode excel -> {len(profiles)} profil(s) charges depuis {from_excel}")
+    elif senior:
+        profiles = generate_senior_profiles()
+        log.info(f"Mode senior -> {len(profiles)} profil(s) de diagnostic generes (gamme SERENISSIA)")
     elif deterministic:
         profiles = generate_deterministic_profiles()
         log.info(f"Mode deterministe -> {len(profiles)} profil(s) de diagnostic generes")
@@ -453,7 +457,7 @@ def save_results(results: list, output_dir: Path) -> None:
     export_xlsx(csv_rows, output_dir)
 
 
-def run(n_profiles: int = DEFAULT_N_PROFILES, resume: bool = True, deterministic: bool = False, from_excel: str | None = None):
+def run(n_profiles: int = DEFAULT_N_PROFILES, resume: bool = True, deterministic: bool = False, senior: bool = False, from_excel: str | None = None):
     setup_logging(OUTPUT_DIR)
     OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -463,7 +467,7 @@ def run(n_profiles: int = DEFAULT_N_PROFILES, resume: bool = True, deterministic
         archive_previous_results(OUTPUT_DIR)
         results = []
 
-    pending_profiles = prepare_profiles(n_profiles, OUTPUT_DIR, resume=resume, deterministic=deterministic, from_excel=from_excel)
+    pending_profiles = prepare_profiles(n_profiles, OUTPUT_DIR, resume=resume, deterministic=deterministic, senior=senior, from_excel=from_excel)
     total_profiles = len(results) + len(pending_profiles)
     log.info(f"=== Demarrage Sante : {total_profiles} profil(s) a traiter ===")
 
@@ -501,7 +505,8 @@ if __name__ == "__main__":
     parser.add_argument("--n", type=int, default=DEFAULT_N_PROFILES, help="Nombre de profils aleatoires")
     parser.add_argument("--no-resume", action="store_true", help="Repart de zero (archive les resultats precedents)")
     parser.add_argument("--deterministic", action="store_true", help="Mode diagnostic: profils deterministes")
+    parser.add_argument("--senior", action="store_true", help="Mode diagnostic senior (65 ans): couvre la gamme SERENISSIA")
     parser.add_argument("--from-excel", type=str, default=None, metavar="FICHIER.xlsx", help="Charger les profils depuis un fichier Excel")
     args = parser.parse_args()
 
-    run(n_profiles=args.n, resume=not args.no_resume, deterministic=args.deterministic, from_excel=args.from_excel)
+    run(n_profiles=args.n, resume=not args.no_resume, deterministic=args.deterministic, senior=args.senior, from_excel=args.from_excel)

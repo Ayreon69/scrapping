@@ -264,3 +264,61 @@ def generate_deterministic_profiles() -> list[dict]:
         profiles.append(_label(b, cp=cp, ville=ville))
 
     return profiles
+
+
+def _base_profile_senior(cp: str = "75001", ville: str = "Paris") -> dict:
+    """Profil de référence senior — 65 ans, pour couvrir la gamme SERENISSIA (55+)."""
+    ddn_65 = (date.today() - timedelta(days=65 * 365)).strftime("%Y-%m-%d")
+    p = _base_profile(cp=cp, ville=ville)
+    p["date_naissance"] = ddn_65
+    return p
+
+
+def generate_senior_profiles() -> list[dict]:
+    """
+    Génère une suite de profils déterministes avec un assuré senior (65 ans)
+    pour tester who_assure/régime/ville/garanties sur la gamme SERENISSIA,
+    jamais couverte par le profil de base standard (41 ans -> gamme Formule).
+    """
+    profiles = []
+    base = _base_profile_senior()
+
+    # --- 1. who_assure (les 4 cas), conjoint aussi senior ---
+    ddn_c_senior = (date.today() - timedelta(days=65 * 365)).strftime("%Y-%m-%d")
+    profiles.append(_label(base, who_assure="ADULT", conjoint="NON", conjoint_date_naissance=None, nb_enfant=0))
+    profiles.append(_label(base, who_assure="COUPLE", conjoint="OUI", conjoint_date_naissance=ddn_c_senior, regime_conjoint="REGIME_GENERAL", nb_enfant=0))
+
+    # --- 2. regime ---
+    for regime in REGIMES:
+        profiles.append(_label(base, regime=regime))
+
+    # --- 3. regime_conjoint (avec conjoint senior) ---
+    for regime_c in REGIMES:
+        profiles.append(_label(base,
+            who_assure="COUPLE", conjoint="OUI",
+            conjoint_date_naissance=ddn_c_senior,
+            regime_conjoint=regime_c,
+        ))
+
+    # --- 4. niveaux de garantie par poste ---
+    for niveau in NIVEAUX_GARANTIE:
+        profiles.append(_label(base, soins_medicaux=niveau))
+    for niveau in NIVEAUX_GARANTIE:
+        profiles.append(_label(base, hospitalisation=niveau))
+    for niveau in NIVEAUX_GARANTIE:
+        profiles.append(_label(base, optique=niveau))
+    for niveau in NIVEAUX_GARANTIE:
+        profiles.append(_label(base, dentaire=niveau))
+    for niveau in NIVEAUX_GARANTIE:
+        profiles.append(_label(base, auditives=niveau))
+
+    # --- 5. mode_sois ---
+    for mode in MODES_SOINS:
+        profiles.append(_label(base, mode_sois=mode))
+
+    # --- 6. géographie (20 villes) ---
+    for cp, ville in CODE_POSTAUX:
+        b = _base_profile_senior(cp=cp, ville=ville)
+        profiles.append(_label(b, cp=cp, ville=ville))
+
+    return profiles

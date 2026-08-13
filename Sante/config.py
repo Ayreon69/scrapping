@@ -21,7 +21,7 @@ HEADERS = {
     "x-requested-with": "XMLHttpRequest",
 }
 
-DELAY_BETWEEN_PROFILES = (5, 10)
+DELAY_BETWEEN_PROFILES = (0, 1)
 REQUEST_TIMEOUT = 15
 
 CSV_DELIMITER = ";"
