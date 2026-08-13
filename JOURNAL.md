@@ -166,6 +166,19 @@ coef_régime × coef_formule`) sur les 855 lignes de prix Selfassurance
 Rapport publié avec simulateur interactif (estime un prix pour une
 combinaison non testée directement, ex. SERENISSIA + couple+enfants).
 
+## 2026-08-13 — Réduction du délai de fetch (10s → 5s)
+
+**Fait :** l'attente initiale avant de récupérer les tarifs (laisse le site
+calculer côté serveur) passe de 10s à 5s sur les 3 scrapers. Le sleep entre
+tentatives de retry (réponse vide/erreur) passe de 10s à 3s. Commit `1c5e436`.
+
+**Validation :** testé sur Santé (1 profil) — les 12 assureurs répondent
+normalement, offres complètes (5 formules pour Self-assurance et Mongustave,
+cohérent avec les runs précédents à 10s), aucun retry déclenché.
+
+Justifié par l'absence totale de détection observée sur ~420 profils déjà
+collectés à ce stade.
+
 ---
 
 ## Pistes ouvertes / pas encore faites
