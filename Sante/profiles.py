@@ -63,6 +63,45 @@ CODE_POSTAUX = [
     ("14000", "Caen"),
     ("20000", "Ajaccio"),
     ("97400", "Saint-Denis (La Reunion)"),
+    # --- Ajouts : couverture departementale elargie ---
+    ("02100", "Saint-Quentin"),          # Aisne
+    ("03000", "Moulins"),                # Allier
+    ("05000", "Gap"),                    # Hautes-Alpes
+    ("07100", "Annonay"),                # Ardeche
+    ("10000", "Troyes"),                 # Aube
+    ("15000", "Aurillac"),               # Cantal
+    ("17000", "La Rochelle"),            # Charente-Maritime
+    ("19000", "Tulle"),                  # Correze
+    ("22000", "Saint-Brieuc"),           # Cotes-d'Armor
+    ("24000", "Perigueux"),              # Dordogne
+    ("25000", "Besancon"),               # Doubs
+    ("29200", "Brest"),                  # Finistere
+    ("30000", "Nimes"),                  # Gard
+    ("37000", "Tours"),                  # Indre-et-Loire
+    ("40000", "Mont-de-Marsan"),         # Landes
+    ("45000", "Orleans"),                # Loiret
+    ("54000", "Nancy"),                  # Meurthe-et-Moselle
+    ("56000", "Vannes"),                 # Morbihan
+    ("62100", "Calais"),                 # Pas-de-Calais
+    ("63000", "Clermont-Ferrand"),       # Puy-de-Dome
+    ("64000", "Pau"),                    # Pyrenees-Atlantiques
+    ("68100", "Mulhouse"),               # Haut-Rhin
+    ("72000", "Le Mans"),                # Sarthe
+    ("73000", "Chambery"),               # Savoie
+    ("74000", "Annecy"),                 # Haute-Savoie
+    ("76000", "Rouen"),                  # Seine-Maritime
+    ("80000", "Amiens"),                 # Somme
+    ("83000", "Toulon"),                 # Var
+    ("84000", "Avignon"),                # Vaucluse
+    ("86000", "Poitiers"),               # Vienne
+    ("87000", "Limoges"),                # Haute-Vienne
+    ("88000", "Epinal"),                 # Vosges
+    ("93000", "Bobigny"),                # Seine-Saint-Denis
+    ("98000", "Monaco"),                 # frontiere
+    ("97110", "Pointe-a-Pitre (Guadeloupe)"),
+    ("97200", "Fort-de-France (Martinique)"),
+    ("97300", "Cayenne (Guyane)"),
+    ("97600", "Mamoudzou (Mayotte)"),
 ]
 
 
@@ -227,8 +266,8 @@ def generate_deterministic_profiles() -> list[dict]:
     for profession, autre_profession in PROFESSIONS:
         profiles.append(_label(base, profession=profession, autre_profession=autre_profession))
 
-    # --- 5. âge de l'assuré principal (dense, tous les 2 ans de 18 à 80) ---
-    for age in range(18, 81, 2):
+    # --- 5. âge de l'assuré principal (dense, tous les ans de 18 à 80) ---
+    for age in range(18, 81):
         ddn = (date.today() - timedelta(days=age * 365)).strftime("%Y-%m-%d")
         profiles.append(_label(base, date_naissance=ddn))
 
@@ -253,12 +292,12 @@ def generate_deterministic_profiles() -> list[dict]:
         enfants = {f"date_naissance_enfant_{i}": ("2015-01-01" if i <= nb_e else None) for i in range(1, 6)}
         profiles.append(_label(base, who_assure="ADULT_KIDS", conjoint="NON", conjoint_date_naissance=None, nb_enfant=nb_e, **enfants))
 
-    # --- 9. âge conjoint (dense, tous les 5 ans de 18 à 80) ---
-    for age_c in range(18, 81, 5):
+    # --- 9. âge conjoint (dense, tous les 2 ans de 18 à 80) ---
+    for age_c in range(18, 81, 2):
         ddn_cv = (date.today() - timedelta(days=age_c * 365)).strftime("%Y-%m-%d")
         profiles.append(_label(base, who_assure="COUPLE", conjoint="OUI", conjoint_date_naissance=ddn_cv, regime_conjoint="REGIME_GENERAL", nb_enfant=0))
 
-    # --- 10. géographie (20 villes) ---
+    # --- 10. géographie (couverture departementale elargie) ---
     for cp, ville in CODE_POSTAUX:
         b = _base_profile(cp=cp, ville=ville)
         profiles.append(_label(b, cp=cp, ville=ville))
