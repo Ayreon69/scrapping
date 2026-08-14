@@ -12,4 +12,4 @@ output/
 Animaux/Pages_Devis/
 
 # Logs de collecte ad-hoc
-collecte.out
+collecte*.out

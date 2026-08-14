@@ -179,12 +179,63 @@ cohérent avec les runs précédents à 10s), aucun retry déclenché.
 Justifié par l'absence totale de détection observée sur ~420 profils déjà
 collectés à ce stade.
 
+## 2026-08-14 — Densification age/geo + regression avec regime general en reference
+
+**Demande :** relancer avec encore plus de profils (âge annuel, plus de départements),
+puis refaire le modèle de régression avec Régime général comme catégorie de
+référence (plus interprétable qu'Alsace-Moselle).
+
+**Fait :**
+- `Sante/profiles.py` : âge assuré principal densifié de tous les 2 ans à
+  **tous les ans** (18-80, 63 points). Âge conjoint : tous les 5 ans → tous
+  les 2 ans (32 points). Géographie élargie de 20 à **58 codes postaux**
+  (couverture départementale France métropolitaine + DOM Guadeloupe,
+  Martinique, Guyane, Mayotte). Commit `3cc057e`.
+- Deux collectes lancées séquentiellement (même dossier de sortie, donc pas
+  en parallèle) : standard (`--deterministic`, 212 profils, 6312 lignes) puis
+  senior (`--senior`, 92 profils, 4155 lignes). Les deux terminées sans
+  erreur, portées par le délai réduit (5s) mis en place précédemment.
+
+**Nouveau signal découvert :** avec la couverture géo élargie (58 codes
+postaux au lieu de 20), la collecte senior révèle **6 exclusions**
+(aucune offre) au lieu d'une seule trouvée avant :
+- Régime "salarié agricole" (déjà connu).
+- Monaco (98000).
+- **Les 4 DOM testés systématiquement exclus** : Guadeloupe, Martinique,
+  Guyane, Mayotte, La Réunion.
+
+Motif net : Selfassurance semble refuser tout profil senior en outre-mer,
+alors que ces mêmes codes postaux passent sans problème avant 55 ans.
+
+**Régression mise à jour** (`REGIME_GENERAL` comme référence au lieu
+d'`ALSACE_MOSELLE`) :
+- Échantillon quasi doublé : 860 lignes (Formule 1-5, contre 530) et 550
+  lignes (SERENISSIA, contre 325).
+- Fit toujours bon : R²=0,960 (Formule) et R²=0,923 (SERENISSIA), légèrement
+  plus bas qu'avant (plus de variance réelle capturée avec plus de données).
+  Erreur de prédiction vérifiée ~5% sur le cas test (contre <3% avant, aussi
+  attendu avec un échantillon plus large et plus varié).
+- Base réinterprétée directement en régime général : 297€/an (Formule),
+  102€/an (SERENISSIA).
+- **Signal révisé** : le coefficient TNS qui semblait "moins cher que régime
+  général" sur SERENISSIA avec le premier passage (325 lignes) **n'est plus
+  significatif** avec l'échantillon élargi (p=0,30 contre p=0,011 avant) —
+  confirmé comme bruit d'échantillonnage plutôt qu'un vrai effet.
+- Coefficients âge, qui-assurer, formule quasi inchangés en valeur mais
+  affinés (âge Formule ×1,017/an, SERENISSIA ×1,036/an).
+
+Les 3 rapports Selfassurance (Formule 1-5, SERENISSIA, modèle de régression)
+mis à jour et republiés sur leurs URLs existantes.
+
 ---
 
 ## Pistes ouvertes / pas encore faites
 
 - Compléter la couverture SERENISSIA (profession, nb_enfants, who_assure avec
   enfants) — refusé pour l'instant, noté comme limite connue.
+- Vérifier si l'exclusion des 4 DOM (Guadeloupe, Martinique, Guyane, Mayotte)
+  découverte sur Selfassurance/SERENISSIA se retrouve chez d'autres assureurs
+  Santé ou sur d'autres produits (MRH, Animaux).
 - Volet détection sécurité : uniquement testé à rythme "poli" jusqu'ici.
   Reste à tester un rythme agressif (sans délai, requêtes en rafale) pour
   chercher le seuil réel de rate-limiting ou de blocage IP.
