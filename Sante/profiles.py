@@ -352,6 +352,11 @@ def generate_senior_profiles() -> list[dict]:
         enfants = {f"date_naissance_enfant_{i}": ("2015-01-01" if i <= nb_e else None) for i in range(1, 6)}
         profiles.append(_label(base, who_assure="ADULT_KIDS", conjoint="NON", conjoint_date_naissance=None, nb_enfant=nb_e, **enfants))
 
+    # --- 3d. age conjoint (dense, tous les 2 ans de 18 a 80, assure principal senior) ---
+    for age_c in range(18, 81, 2):
+        ddn_cv = (date.today() - timedelta(days=age_c * 365)).strftime("%Y-%m-%d")
+        profiles.append(_label(base, who_assure="COUPLE", conjoint="OUI", conjoint_date_naissance=ddn_cv, regime_conjoint="REGIME_GENERAL", nb_enfant=0))
+
     # --- 4. niveaux de garantie par poste ---
     for niveau in NIVEAUX_GARANTIE:
         profiles.append(_label(base, soins_medicaux=niveau))

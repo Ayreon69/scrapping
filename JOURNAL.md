@@ -253,17 +253,41 @@ régresseurs a aussi été testé (R²=0,932) — confirme les mêmes conclusion
 (profession non significative en tant que catégorie unique, nb_enfant très
 significatif, coefficient linéaire).
 
-Les 3 rapports Selfassurance mis à jour et republiés (mêmes URLs). La
-couverture SERENISSIA est désormais quasi complète — seul angle mort restant :
-âge du conjoint sur profil senior (jamais testé densément, contrairement à
-Formule).
+Les 3 rapports Selfassurance mis à jour et republiés (mêmes URLs).
+
+## 2026-08-17 (suite) — Âge du conjoint dense sur SERENISSIA : dernier trou comblé
+
+**Fait :**
+- `generate_senior_profiles()` : ajout d'une série âge conjoint dense (18-80
+  ans, tous les 2 ans, 32 points), assuré principal fixé à 65 ans. Total
+  senior : 117 → **149 profils**.
+- Collecte relancée (`collecte_senior_v4.out`), 358 profils traités,
+  16 195 lignes. **Aucun blocage** : 1937 requêtes HTTP 200, un seul timeout
+  réseau (sodedif, récupéré au retry). Archivée
+  (`output/archive/20260817_senior_v4_results.csv`).
+
+**Découverte majeure : coupure nette à 55 ans sur l'âge du conjoint.**
+Pour un couple en gamme SERENISSIA, si le conjoint a **moins de 55 ans**,
+Selfassurance retourne **zéro offre** — quel que soit l'âge de l'assuré
+principal (fixé ici à 65 ans, donc lui-même largement éligible). Dès 55 ans,
+le prix progresse normalement (2 588€ à 55 ans → 3 928€ à 79 ans). Confirme
+et complète le constat déjà fait sur l'assuré principal : **SERENISSIA exige
+que les deux membres du couple aient 55 ans ou plus**, sans exception sur les
+32 points d'âge testés.
+
+**Régression mise à jour** (échantillon SERENISSIA 1 715 lignes, contre
+1 100) : R²=0,927 (contre 0,917), coefficients who_assure/régime/formule
+stables. Les lignes conjoint-exclu (prix nul) sont naturellement écartées du
+fit — la règle est documentée séparément (coupure binaire, pas un effet
+continu, donc non capturée par un coefficient).
+
+Couverture SERENISSIA désormais **complète** sur tous les axes testés côté
+Formule. Les 3 rapports Selfassurance mis à jour et republiés (mêmes URLs).
 
 ---
 
 ## Pistes ouvertes / pas encore faites
 
-- Âge du conjoint sur profil senior (SERENISSIA) — jamais testé densément,
-  contrairement à la gamme Formule où l'assuré principal a 41 ans.
 - Vérifier si l'exclusion des 4 DOM (Guadeloupe, Martinique, Guyane, Mayotte)
   découverte sur Selfassurance/SERENISSIA se retrouve chez d'autres assureurs
   Santé ou sur d'autres produits (MRH, Animaux).
