@@ -322,10 +322,14 @@ def generate_senior_profiles() -> list[dict]:
     profiles = []
     base = _base_profile_senior()
 
-    # --- 1. who_assure (les 4 cas), conjoint aussi senior ---
+    # --- 1. who_assure (les 4 cas), conjoint/enfants aussi senior ---
     ddn_c_senior = (date.today() - timedelta(days=65 * 365)).strftime("%Y-%m-%d")
     profiles.append(_label(base, who_assure="ADULT", conjoint="NON", conjoint_date_naissance=None, nb_enfant=0))
     profiles.append(_label(base, who_assure="COUPLE", conjoint="OUI", conjoint_date_naissance=ddn_c_senior, regime_conjoint="REGIME_GENERAL", nb_enfant=0))
+    enfants_1 = {f"date_naissance_enfant_{i}": ("2015-01-01" if i <= 1 else None) for i in range(1, 6)}
+    profiles.append(_label(base, who_assure="ADULT_KIDS", conjoint="NON", conjoint_date_naissance=None, nb_enfant=1, **enfants_1))
+    enfants_2 = {f"date_naissance_enfant_{i}": ("2015-01-01" if i <= 2 else None) for i in range(1, 6)}
+    profiles.append(_label(base, who_assure="COUPLE_KIDS", conjoint="OUI", conjoint_date_naissance=ddn_c_senior, regime_conjoint="REGIME_GENERAL", nb_enfant=2, **enfants_2))
 
     # --- 2. regime ---
     for regime in REGIMES:
@@ -338,6 +342,15 @@ def generate_senior_profiles() -> list[dict]:
             conjoint_date_naissance=ddn_c_senior,
             regime_conjoint=regime_c,
         ))
+
+    # --- 3b. profession / autre_profession ---
+    for profession, autre_profession in PROFESSIONS:
+        profiles.append(_label(base, profession=profession, autre_profession=autre_profession))
+
+    # --- 3c. nb_enfants (ADULT_KIDS, 0 a 5) ---
+    for nb_e in range(0, 6):
+        enfants = {f"date_naissance_enfant_{i}": ("2015-01-01" if i <= nb_e else None) for i in range(1, 6)}
+        profiles.append(_label(base, who_assure="ADULT_KIDS", conjoint="NON", conjoint_date_naissance=None, nb_enfant=nb_e, **enfants))
 
     # --- 4. niveaux de garantie par poste ---
     for niveau in NIVEAUX_GARANTIE:

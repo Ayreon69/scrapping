@@ -1,7 +1,6 @@
 # Journal — Audit tarifaire Mon Gustave
 
-Mission : scraper le comparateur d'assurance Mon Gustave (groupe Finare, même
-groupe qu'ECA Assurance) pour évaluer trois choses — la faisabilité du scraping,
+Mission : scraper le comparateur d'assurance Mon Gustave pour évaluer trois choses — la faisabilité du scraping,
 la possibilité de reconstituer les grilles tarifaires des partenaires, et si le
 site détecte l'activité.
 
@@ -227,12 +226,44 @@ d'`ALSACE_MOSELLE`) :
 Les 3 rapports Selfassurance (Formule 1-5, SERENISSIA, modèle de régression)
 mis à jour et republiés sur leurs URLs existantes.
 
+## 2026-08-17 — Couverture SERENISSIA complétée (profession + enfants)
+
+**Fait :**
+- `Sante/profiles.py` : `generate_senior_profiles()` complété avec les 3
+  séries manquantes — who_assure ADULT_KIDS/COUPLE_KIDS, profession (17
+  valeurs), nb_enfant (0 à 5). Total senior : 92 → **117 profils**.
+- Collecte senior relancée (`collecte_senior_v3.out`), 209 profils traités,
+  9493 lignes brutes, terminée sans erreur. Archivée
+  (`output/archive/20260817_senior_v3_results.csv`).
+
+**Résultats des séries complétées :**
+- **Profession (17 valeurs testées) : aucun effet sur le prix**, même prix à
+  l'euro près quelle que soit la catégorie/sous-catégorie choisie — cohérent
+  avec le constat déjà fait sur la gamme Formule.
+- **Nombre d'enfants** : effet net, +540€/an du 1er au 2e enfant, puis
+  **plafond dès 2 enfants** (2 514€ stable de 2 à 5 enfants) — même
+  comportement de plafonnement que sur Formule 1-5.
+- **Qui assurer**, désormais complet sur les 4 cas : Seul (1 434€) < Seul+enfants
+  (2 083€) < Couple (2 867€) < Couple+enfants (3 947€).
+
+**Régression SERENISSIA mise à jour** avec l'échantillon complet (1 100
+lignes, contre 550) : R²=0,917, coefficients who_assure/régime/formule
+affinés mais stables. Un modèle "étendu" avec profession+nb_enfant en
+régresseurs a aussi été testé (R²=0,932) — confirme les mêmes conclusions
+(profession non significative en tant que catégorie unique, nb_enfant très
+significatif, coefficient linéaire).
+
+Les 3 rapports Selfassurance mis à jour et republiés (mêmes URLs). La
+couverture SERENISSIA est désormais quasi complète — seul angle mort restant :
+âge du conjoint sur profil senior (jamais testé densément, contrairement à
+Formule).
+
 ---
 
 ## Pistes ouvertes / pas encore faites
 
-- Compléter la couverture SERENISSIA (profession, nb_enfants, who_assure avec
-  enfants) — refusé pour l'instant, noté comme limite connue.
+- Âge du conjoint sur profil senior (SERENISSIA) — jamais testé densément,
+  contrairement à la gamme Formule où l'assuré principal a 41 ans.
 - Vérifier si l'exclusion des 4 DOM (Guadeloupe, Martinique, Guyane, Mayotte)
   découverte sur Selfassurance/SERENISSIA se retrouve chez d'autres assureurs
   Santé ou sur d'autres produits (MRH, Animaux).
