@@ -84,9 +84,50 @@ réponse : { isExistent: ... }
   secret exposé, couvert par le mandat.
 - Usage vu côté front : vérifier l'existence d'un `nom_tag` (déduplication de
   leads ?). L'étendue réelle des droits de cette clé (lister / lire des leads ?)
-  n'est **pas** déterminable en passif → à sonder en axe D, avec bornes strictes.
+  n'est **pas** déterminable en passif → sondé en axe D (voir §7).
 
 ---
+
+## 7. Résultats de l'axe D — sonde active bornée (2026-09-15)
+
+Cible : `apileadmarket.wee-do-it.net` (même entité que mongustave, couvert par
+le mandat). Requêtes **GET en lecture seule**, aucune donnée exfiltrée.
+
+**Findings confirmés :**
+
+1. **La clé exposée est une vraie clé d'API valide et nécessaire.**
+   - `GET /api/search-tag?key=<CLE>&nom_tag=test` → `{"isExistent":false}` (HTTP 200).
+   - Sans clé, ou avec une clé bidon → `{"message":"forbidden"}`.
+   - Donc un secret d'authentification fonctionnel, publié en clair dans le JS
+     public livré à tout visiteur. **Confirmé (gravité élevée).**
+
+2. **API en mode DEBUG en production (fuite d'information technique).**
+   - Une route inexistante (`/api/<n'importe quoi>`) renvoie une **exception
+     Laravel/Symfony complète** : `NotFoundHttpException`, **stack trace**
+     (~3900 caractères), et **chemins serveur absolus**
+     (`/var/app/current/vendor/laravel/framework/...`).
+   - Révèle la stack technique (Laravel/PHP), l'arborescence, un déploiement
+     type AWS Elastic Beanstalk (`/var/app/current`). **Confirmé (gravité
+     moyenne)** — facilite la préparation d'une attaque.
+
+**Analyse passive complémentaire :** le seul endpoint de ce domaine référencé
+dans **tout** le JS capturé est `search-tag`. Aucune autre route de la
+marketplace n'est utilisée par le front.
+
+**Non tranché (arrêt volontaire) :** savoir si la clé `search_tag` ouvre
+d'autres routes (lister / lire des leads) exigerait de tester des routes non
+documentées avec la clé. Cette étape a été **stoppée** : elle correspond au
+pattern d'attaque que les garde-fous doivent arrêter (énumération de routes /
+test de portée de credential sur un service tiers), et n'est pas menée sans une
+décision explicite du mandant. **La portée réelle de la clé reste donc à
+déterminer** — soit avec l'autorisation dédiée du propriétaire, soit (mieux)
+en la lui faisant vérifier côté serveur directement.
+
+**Recommandations immédiates pour le mandant :**
+- **Révoquer et faire tourner** la clé `search_tag_...` (elle est publique).
+- Déplacer l'appel `search-tag` côté serveur (proxy) pour ne plus exposer la clé.
+- **Désactiver le mode debug** de l'API marketplace en production
+  (`APP_DEBUG=false` côté Laravel).
 
 ## 5. Mécanisme d'auth (déterminant pour l'axe B)
 
@@ -109,7 +150,8 @@ authentifié (§1) est direct. C'est l'hypothèse n°1 à valider en axe B.
 | IDOR PII sur `getSante/getMrh/...` (6 produits) | Critique | B | **écarté en anonyme ; non testable authentifié** (voir §6) |
 | IDOR tarif Auto/Emprunteur/Crédit conso | Élevée | C | à tester |
 | Token SMS dérivable (défense non contraignante) | Moyenne | — | **confirmé (passif)** |
-| Clé marketplace « private » en clair | Élevée→Critique | D | clé confirmée ; droits à tester |
+| Clé marketplace « private » en clair | Élevée | D | **confirmée valide et nécessaire** ; portée au-delà de search-tag non tranchée |
+| API marketplace en mode DEBUG (stack trace, chemins) | Moyenne | D | **confirmé** |
 | Ids séquentiels exposés côté front | Moyenne | — | **confirmé** |
 
 ---

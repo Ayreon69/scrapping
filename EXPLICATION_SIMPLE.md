@@ -80,9 +80,24 @@ la page, visible par tout visiteur qui sait où regarder. Pire : le nom de la cl
 contient littéralement le mot **« privé »** — c'est donc une clé qui était censée
 rester secrète, et qui ne l'est pas.
 
-On ne sait pas encore **ce que cette clé permet de faire exactement** (juste
-vérifier une info ? ou lire la liste des clients ?). C'est aussi à tester dans la
-prochaine étape. Mais le simple fait qu'elle soit visible est déjà un défaut.
+**Après vérification :** cette clé est **une vraie clé qui fonctionne** — on a
+confirmé qu'elle donne accès au service partenaire (sans elle, la porte reste
+fermée). C'est donc un vrai défaut, pas une fausse alerte : un mot de passe qui
+traîne à la vue de tous. **Ce qu'elle permet exactement au-delà de sa fonction
+de base** (juste vérifier une info, ou aussi lire la liste des clients ?) n'a
+**pas** été poussé plus loin : ce genre de test ressemble trop à une vraie
+attaque, on préfère que le propriétaire le vérifie lui-même de l'intérieur.
+
+**En creusant, on a aussi remarqué autre chose :** quand on demande une page qui
+n'existe pas à ce service partenaire, il répond en affichant **le détail
+technique de son fonctionnement interne** (le type de logiciel utilisé,
+l'emplacement des fichiers sur le serveur…). C'est comme un magasin qui, quand
+on se trompe de porte, afficherait le plan complet de ses réserves et de son
+système d'alarme. Ça ne fait pas fuiter de données clients, mais ça **facilite
+la tâche** d'une personne mal intentionnée.
+
+**Ce qu'il faut faire, tout de suite :** changer cette clé (puisqu'elle est
+publique) et couper cet affichage technique.
 
 ---
 
@@ -119,7 +134,8 @@ l'argent**.
 | Le problème | L'image | Est-ce grave ? | Où on en est |
 |---|---|---|---|
 | Numéros de dossier qui se suivent | Compter 999, 1000, 1001… | Moyen (prix) | Prix : confirmé. Données perso sans connexion : **écarté (pas de fuite)**. Entre clients connectés : **ouvert** |
-| Clé secrète visible | Le code du coffre écrit sur la porte | Potentiellement grave | Clé confirmée visible ; ce qu'elle ouvre : à tester |
+| Clé secrète visible | Le code du coffre écrit sur la porte | Grave | **Clé confirmée valide** ; ce qu'elle ouvre au-delà du minimum : à faire vérifier par le propriétaire |
+| Service partenaire qui affiche ses détails techniques | Un magasin qui montre le plan de ses réserves | Moyen | **Confirmé** |
 | Vérification SMS inefficace | « Prouvez qui vous êtes en écrivant votre nom » | Moyen | Confirmé |
 | Faux clients en masse | Milliers de faux courriers dans la boîte | Moyen | Confirmé |
 
