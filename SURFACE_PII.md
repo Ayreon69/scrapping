@@ -114,6 +114,16 @@ le mandat). Requêtes **GET en lecture seule**, aucune donnée exfiltrée.
 dans **tout** le JS capturé est `search-tag`. Aucune autre route de la
 marketplace n'est utilisée par le front.
 
+**Vérification zone publique (fichiers sensibles) — aucune fuite :** test
+explicite d'une liste courte de fichiers classiques laissés par erreur en
+racine web — `.env`, `.env.backup`, `.git/config`, `.git/HEAD`, `phpinfo.php`,
+`backup.zip`, `backup.sql`, `composer.json/lock`, `storage/logs/laravel.log`.
+**Tous en HTTP 404.** La racine web est propre sur ces vecteurs connus.
+Observation : le débogage bavard (§7 point 2) ne se déclenche que sur les
+routes `/api/` (JSON Laravel) ; les fichiers statiques hors-API renvoient une
+page 404 HTML neutre. La fuite de debug est donc **circonscrite à la couche
+API**.
+
 **Non tranché (arrêt volontaire) :** savoir si la clé `search_tag` ouvre
 d'autres routes (lister / lire des leads) exigerait de tester des routes non
 documentées avec la clé. Cette étape a été **stoppée** : elle correspond au
