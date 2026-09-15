@@ -50,11 +50,21 @@ numéro — pas juste les prix, mais potentiellement **son nom, son email, son
 téléphone, son adresse**, et pour les crédits/assurances de prêt,
 **ses revenus et des informations de santé**.
 
-La question qui reste à vérifier (prochaine étape) : est-ce que le gardien de
-l'immeuble **vérifie vraiment que vous êtes le propriétaire du dossier** avant de
-vous le donner ? Si la réponse est non, alors n'importe qui pourrait lire les
-données personnelles de n'importe qui. **C'est le point le plus important à
-tester, et il n'est pas encore tranché.**
+La question qui restait à vérifier : est-ce que le gardien de l'immeuble
+**vérifie vraiment que vous êtes le propriétaire du dossier** avant de vous le
+donner ?
+
+**Bonne nouvelle après vérification (sur notre propre dossier de test) :** quand
+on essaie de récupérer un dossier **sans être connecté**, le gardien refuse — il
+renvoie une page vide, aucune donnée personnelle ne sort. Donc la fuite « tout le
+monde peut lire les dossiers librement » **n'existe pas** par cette porte.
+
+**Ce qu'on n'a pas pu tester :** est-ce qu'un client **connecté** pourrait lire
+le dossier d'un **autre** client ? Pour le vérifier, il faudrait deux vrais
+comptes clients. Or le site **ne permet pas de créer un compte librement**
+(l'accès se fait par un lien personnel envoyé par email/SMS). Ce point précis
+reste donc **ouvert** : ni prouvé, ni écarté. Il faudrait que le propriétaire du
+site fournisse deux accès de test pour trancher.
 
 ---
 
@@ -108,7 +118,7 @@ l'argent**.
 
 | Le problème | L'image | Est-ce grave ? | Où on en est |
 |---|---|---|---|
-| Numéros de dossier qui se suivent | Compter 999, 1000, 1001… | Moyen (prix) → **potentiellement grave** (données perso) | Prix : confirmé. Données perso : **à vérifier** |
+| Numéros de dossier qui se suivent | Compter 999, 1000, 1001… | Moyen (prix) | Prix : confirmé. Données perso sans connexion : **écarté (pas de fuite)**. Entre clients connectés : **ouvert** |
 | Clé secrète visible | Le code du coffre écrit sur la porte | Potentiellement grave | Clé confirmée visible ; ce qu'elle ouvre : à tester |
 | Vérification SMS inefficace | « Prouvez qui vous êtes en écrivant votre nom » | Moyen | Confirmé |
 | Faux clients en masse | Milliers de faux courriers dans la boîte | Moyen | Confirmé |
@@ -119,9 +129,11 @@ l'argent**.
 
 1. **Rien n'a été volé ni cassé.** On a seulement observé comment le site est
    construit, à partir d'informations qu'il donne lui-même à tout le monde.
-2. **Le point le plus sérieux n'est pas encore tranché** : on a trouvé la porte
-   qui donnerait accès aux données personnelles complètes des clients, mais il
-   reste à vérifier si cette porte est réellement gardée ou pas.
+2. **Le point le plus sérieux est en partie rassurant** : la porte vers les
+   données personnelles **est bien gardée pour un visiteur non connecté** (pas de
+   fuite libre). Il reste une seule question ouverte — un client connecté
+   pourrait-il voir le dossier d'un autre ? — qu'on n'a pas pu tester faute de
+   pouvoir créer des comptes.
 3. **Tout ceci sert à réparer.** Chaque problème listé a une solution simple
    (rendre les numéros impossibles à deviner, cacher la clé, vraie vérification
    d'identité, limiter le nombre de demandes). C'est justement le but de cet

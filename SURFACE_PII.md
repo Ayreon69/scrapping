@@ -106,8 +106,41 @@ authentifié (§1) est direct. C'est l'hypothèse n°1 à valider en axe B.
 
 | Finding | Gravité potentielle | Axe | Statut |
 |---|---|---|---|
-| IDOR PII sur `getSante/getMrh/...` (6 produits) | Critique | B | **à tester** |
+| IDOR PII sur `getSante/getMrh/...` (6 produits) | Critique | B | **écarté en anonyme ; non testable authentifié** (voir §6) |
 | IDOR tarif Auto/Emprunteur/Crédit conso | Élevée | C | à tester |
 | Token SMS dérivable (défense non contraignante) | Moyenne | — | **confirmé (passif)** |
 | Clé marketplace « private » en clair | Élevée→Critique | D | clé confirmée ; droits à tester |
 | Ids séquentiels exposés côté front | Moyenne | — | **confirmé** |
+
+---
+
+## 6. Résultats de l'axe B — test actif borné (2026-09-15)
+
+Test mené sur **un id créé par nous** (`1721854`, données Faker), conformément à
+la borne éthique. Aucune donnée réelle de tiers consultée.
+
+**Ce qui a été testé :**
+1. `GET espace-client/monCompte/getSante/{notre_id}` **en anonyme** (sans
+   session) → **HTTP 404 + coquille SPA HTML**, aucun PII. La route PII exige
+   une session.
+2. `GET espace-client/sa/i/{notre_id}` (page « Recalculer ») en anonyme →
+   **HTTP 404 + coquille SPA**. Les mots « email » / « telephone » présents dans
+   le HTML sont des **libellés CSS** et le **numéro standard de Mon Gustave**
+   (schema.org `ContactPoint`), pas des données client. **Pas de fuite.**
+
+**Découverte bloquante pour la suite de l'axe B :**
+- Le site tourne sous **WordPress** (`/login` → `wp-login.php`, `wp-json`
+  présent).
+- **L'auto-inscription est désactivée** (`wp-login.php?action=register` →
+  `registration=disabled`).
+- Il n'existe donc **pas** de flux « créer un compte » public permettant de
+  monter le scénario compte A / compte B. L'accès à l'espace client repose
+  vraisemblablement sur un **lien envoyé au propriétaire du lead** (email/SMS),
+  pas sur un couple identifiant/mot de passe librement créable.
+
+**Conclusion axe B :** la fuite PII **est écartée sur toutes les voies
+accessibles sans authentification**. L'IDOR PII authentifié ne peut être ni
+confirmé ni infirmé sans un compte légitime (à fournir par le propriétaire du
+site). Recommandation : si le mandant peut fournir 2 accès espace-client
+distincts, refaire le test croisé (lire l'id de l'un depuis l'autre). Sinon,
+ce vecteur reste **théorique, non démontré**.
